@@ -1,61 +1,440 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>濾水壺小幫手</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); color: #0ea5e9; }
-            100% { transform: scale(1); }
-        }
-        .animate-pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    </style>
+  <meta charset="UTF-8" />
+  <!-- 確保在手機上瀏覽時比例正確且支援觸控 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>濾水壺小幫手</title>
+  
+  <!-- 引入 Tailwind CSS 進行美化排版 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 引入 React 與 ReactDOM (使用 CDN) -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- 引入 Babel 使得瀏覽器能直接編譯 JSX 語法 -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- 自訂的動畫與基礎樣式 -->
+  <style>
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); color: #0ea5e9; }
+      100% { transform: scale(1); }
+    }
+    .animate-pop { 
+      animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    }
+    body {
+      -webkit-tap-highlight-color: transparent; /* 移除手機點擊時的預設黑影 */
+    }
+  </style>
 </head>
-<body class="bg-[#f4f9ff]">
-    <div id="root"></div>
+<body class="bg-[#f4f9ff] text-slate-800 font-sans overflow-x-hidden">
 
-    <script type="text/babel">
-        const { useState, useMemo, useEffect } = React;
-        
-        // 這裡定義圖示元件 (因為直接引入 lucide-react 在 CDN 環境較複雜，我們用簡單版)
-        const Icon = ({ name, className = "" }) => {
-            useEffect(() => {
-                lucide.createIcons();
-            }, []);
-            return <i data-lucide={name} className={className}></i>;
-        };
+  <!-- React 應用程式的掛載點 -->
+  <div id="root"></div>
 
-        function App() {
-            // --- 這裡貼上你之前的 React 邏輯程式碼 ---
-            // 注意：把原本程式碼中的 <Droplet /> 改成 <Icon name="droplet" /> 類推
-            
-            const [count, setCount] = useState(0); // 範例
+  <!-- 在這裡撰寫我們的 React 邏輯 -->
+  <script type="text/babel">
+    const { useState, useMemo, useEffect } = React;
 
-            return (
-                <div className="min-h-screen p-4 text-center">
-                    <h1 className="text-2xl font-bold text-blue-600">濾水小幫手</h1>
-                    <div className="mt-10 p-6 bg-white rounded-3xl shadow-xl">
-                        <p>網頁已經成功跑起來囉！</p>
-                        <button 
-                            onClick={() => setCount(count + 1)}
-                            className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-full"
-                        >
-                            測試點擊：{count}
-                        </button>
-                    </div>
-                </div>
-            );
+    // ==========================================
+    // 1. 手工繪製的 SVG 圖示元件 (取代原本的 lucide-react)
+    // 為了讓 HTML 完全獨立運作，我們將用到的圖示直接轉成元件
+    // ==========================================
+    const IconSvg = ({ children, className = "", strokeWidth = 2, ...props }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+        {children}
+      </svg>
+    );
+
+    const Droplet = (props) => <IconSvg {...props}><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></IconSvg>;
+    const Plus = (props) => <IconSvg {...props}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></IconSvg>;
+    const Minus = (props) => <IconSvg {...props}><line x1="5" y1="12" x2="19" y2="12"/></IconSvg>;
+    const RotateCcw = (props) => <IconSvg {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></IconSvg>;
+    const Settings = (props) => <IconSvg {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconSvg>;
+    const X = (props) => <IconSvg {...props}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></IconSvg>;
+    const ChevronLeft = (props) => <IconSvg {...props}><polyline points="15 18 9 12 15 6"/></IconSvg>;
+    const ChevronRight = (props) => <IconSvg {...props}><polyline points="9 18 15 12 9 6"/></IconSvg>;
+    const AlertTriangle = (props) => <IconSvg {...props}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></IconSvg>;
+    const Sparkles = (props) => <IconSvg {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></IconSvg>;
+    const Info = (props) => <IconSvg {...props}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></IconSvg>;
+
+    // ==========================================
+    // 2. 輔助函式
+    // ==========================================
+    const getLocalDateString = (date = new Date()) => {
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    // ==========================================
+    // 3. 主應用程式
+    // ==========================================
+    function App() {
+      const todayDateStr = getLocalDateString();
+      
+      // --- 狀態管理 (State) 與 LocalStorage 綁定 ---
+      // 讀取設定
+      const [settings, setSettings] = useState(() => {
+        const saved = localStorage.getItem('waterFilterSettings');
+        return saved ? JSON.parse(saved) : { totalCapacity: 100, pitcherVolume: 2 };
+      });
+
+      // 讀取濾芯啟用日
+      const [filterStartDate, setFilterStartDate] = useState(() => {
+        const saved = localStorage.getItem('waterFilterStartDate');
+        if (saved) return saved;
+        const d = new Date(); d.setDate(d.getDate() - 7); 
+        return getLocalDateString(d); // 預設7天前
+      });
+
+      // 讀取歷史紀錄
+      const [usageHistory, setUsageHistory] = useState(() => {
+        const saved = localStorage.getItem('waterFilterHistory');
+        return saved ? JSON.parse(saved) : {};
+      });
+
+      // 當資料變更時，儲存到 LocalStorage
+      useEffect(() => {
+        localStorage.setItem('waterFilterSettings', JSON.stringify(settings));
+      }, [settings]);
+      useEffect(() => {
+        localStorage.setItem('waterFilterStartDate', filterStartDate);
+      }, [filterStartDate]);
+      useEffect(() => {
+        localStorage.setItem('waterFilterHistory', JSON.stringify(usageHistory));
+      }, [usageHistory]);
+
+      // UI 狀態
+      const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+      const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+      const [currentMonth, setCurrentMonth] = useState(new Date());
+      const [selectedDate, setSelectedDate] = useState(todayDateStr);
+      const [popAnimation, setPopAnimation] = useState(false);
+
+      // --- 計算邏輯 ---
+      const totalPitchersUsed = useMemo(() => {
+        let total = 0;
+        for (const [date, count] of Object.entries(usageHistory)) {
+          if (date >= filterStartDate) {
+            total += count;
+          }
         }
+        return total;
+      }, [usageHistory, filterStartDate]);
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+      const totalVolumeUsed = totalPitchersUsed * settings.pitcherVolume;
+      const progressPercentage = Math.min((totalVolumeUsed / settings.totalCapacity) * 100, 100);
+      const isWarning = progressPercentage >= 85;
+      const isDanger = progressPercentage >= 100;
+      const remainingPitchers = Math.max(0, Math.floor((settings.totalCapacity - totalVolumeUsed) / settings.pitcherVolume));
+
+      const getStatusContent = () => {
+        if (isDanger) return { text: "該換濾芯囉！", emoji: "🚨", color: "from-red-400 to-rose-500", shadow: "shadow-red-200" };
+        if (isWarning) return { text: "準備買新濾芯啦", emoji: "🛒", color: "from-amber-400 to-orange-500", shadow: "shadow-amber-200" };
+        if (progressPercentage > 50) return { text: "穩定過濾中", emoji: "💧", color: "from-cyan-400 to-blue-500", shadow: "shadow-blue-200" };
+        return { text: "水質超棒！", emoji: "✨", color: "from-cyan-300 to-blue-400", shadow: "shadow-cyan-200" };
+      };
+      const statusInfo = getStatusContent();
+
+      // --- 互動功能 ---
+      const triggerPop = () => {
+        setPopAnimation(false);
+        setTimeout(() => setPopAnimation(true), 10);
+      };
+
+      const handleAddPitcher = () => {
+        setUsageHistory(prev => ({
+          ...prev,
+          [selectedDate]: (prev[selectedDate] || 0) + 1
+        }));
+        triggerPop();
+      };
+
+      const handleRemovePitcher = () => {
+        setUsageHistory(prev => {
+          const current = prev[selectedDate] || 0;
+          if (current <= 0) return prev;
+          return {
+            ...prev,
+            [selectedDate]: current - 1
+          };
+        });
+        triggerPop();
+      };
+
+      const confirmResetFilter = () => {
+        setFilterStartDate(todayDateStr);
+        setIsResetModalOpen(false);
+      };
+
+      // --- 日曆邏輯 ---
+      const handlePrevMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+      const handleNextMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+
+      const generateCalendarDays = () => {
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const firstDayIndex = new Date(year, month, 1).getDay();
+        const days = [];
+        for (let i = 0; i < firstDayIndex; i++) days.push(null);
+        for (let i = 1; i <= daysInMonth; i++) days.push(new Date(year, month, i));
+        return days;
+      };
+
+      const calendarDays = generateCalendarDays();
+      const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+
+      return (
+        <div className="min-h-screen bg-[#f4f9ff] text-slate-800 font-sans pb-10">
+          
+          <header className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-50">
+            <div className="flex items-center gap-2">
+              <div className="bg-white/20 p-1.5 rounded-full backdrop-blur-sm">
+                <Droplet className="w-6 h-6 text-white" fill="white" />
+              </div>
+              <h1 className="text-xl font-bold tracking-wide text-white drop-shadow-sm">濾水小幫手</h1>
+            </div>
+            <button onClick={() => setIsSettingsOpen(true)} className="p-2 hover:bg-white/20 rounded-full transition-colors active:scale-90">
+              <Settings className="w-6 h-6 text-white" />
+            </button>
+          </header>
+
+          <main className="max-w-md mx-auto p-4 space-y-6 mt-4">
+            
+            <section className={`bg-white rounded-3xl shadow-lg border border-slate-50 p-6 relative overflow-hidden transition-all duration-300 ${statusInfo.shadow}`}>
+              <div className="absolute -right-10 -top-10 w-40 h-40 bg-gradient-to-br from-cyan-100/50 to-blue-100/50 rounded-full blur-2xl pointer-events-none"></div>
+
+              <div className="flex justify-between items-end mb-4 relative z-10">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl">{statusInfo.emoji}</span>
+                    <h2 className="text-sm font-bold text-slate-500">{statusInfo.text}</h2>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className={`text-5xl font-black bg-clip-text text-transparent bg-gradient-to-br ${statusInfo.color}`}>
+                      {Math.floor(progressPercentage)}<span className="text-3xl">%</span>
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="block text-xs text-slate-400 font-medium mb-1">約還可濾</span>
+                  <span className={`text-2xl font-black ${isDanger ? 'text-red-500' : 'text-slate-700'}`}>
+                    {remainingPitchers} <span className="text-base text-slate-400">壺</span>
+                  </span>
+                </div>
+              </div>
+
+              <div className="h-6 bg-slate-100 rounded-full overflow-hidden mb-2 relative z-10 shadow-inner">
+                <div 
+                  className={`h-full transition-all duration-1000 ease-out rounded-full bg-gradient-to-r ${statusInfo.color} relative`}
+                  style={{ width: `${progressPercentage}%` }}
+                >
+                  <div className="absolute top-0 left-0 right-0 h-1/2 bg-white/20 rounded-t-full"></div>
+                </div>
+              </div>
+
+              <div className="flex justify-between text-xs text-slate-400 font-medium mb-6 relative z-10 px-1">
+                <span>已濾 {totalVolumeUsed}L</span>
+                <span>總量 {settings.totalCapacity}L</span>
+              </div>
+
+              <button 
+                onClick={() => setIsResetModalOpen(true)}
+                className="w-full py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all bg-slate-50 hover:bg-slate-100 text-slate-600 active:scale-[0.98] border border-slate-100 shadow-sm"
+              >
+                <RotateCcw className="w-5 h-5" />
+                換新濾芯啦！(重置)
+              </button>
+            </section>
+
+            <section className="bg-white rounded-3xl shadow-lg shadow-blue-100/50 border border-slate-50 p-5">
+              <div className="flex items-center justify-between mb-5 px-2">
+                <button onClick={handlePrevMonth} className="p-2 text-cyan-600 hover:bg-cyan-50 rounded-2xl transition active:scale-90">
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <h2 className="font-black text-lg text-slate-700 tracking-wide">
+                  {currentMonth.getFullYear()} 年 {currentMonth.getMonth() + 1} 月
+                </h2>
+                <button onClick={handleNextMonth} className="p-2 text-cyan-600 hover:bg-cyan-50 rounded-2xl transition active:scale-90">
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-7 gap-y-2 gap-x-1 mb-2 text-center">
+                {weekDays.map((day, idx) => (
+                  <div key={idx} className="text-xs font-bold text-slate-300 py-1">{day}</div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-7 gap-y-2 gap-x-1">
+                {calendarDays.map((dateObj, idx) => {
+                  if (!dateObj) return <div key={`empty-${idx}`} className="h-11"></div>;
+
+                  const dateStr = getLocalDateString(dateObj);
+                  const isSelected = dateStr === selectedDate;
+                  const isToday = dateStr === todayDateStr;
+                  const isAfterFilterStart = dateStr >= filterStartDate;
+                  const usageCount = usageHistory[dateStr] || 0;
+                  const hasData = usageCount > 0;
+
+                  return (
+                    <button
+                      key={dateStr}
+                      onClick={() => setSelectedDate(dateStr)}
+                      className={`relative h-11 w-full flex flex-col items-center justify-center rounded-2xl transition-all duration-200 ${
+                        isSelected 
+                          ? 'bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-md shadow-blue-200 scale-105 z-10' 
+                          : 'hover:bg-slate-50 text-slate-600 active:scale-95'
+                      }`}
+                    >
+                      {isToday && !isSelected && (
+                        <div className="absolute inset-0 rounded-2xl border-2 border-cyan-300 opacity-50"></div>
+                      )}
+
+                      <span className={`text-sm ${isSelected ? 'font-black' : 'font-semibold'}`}>
+                        {dateObj.getDate()}
+                      </span>
+                      
+                      {hasData && (
+                        <div className="absolute bottom-1 flex justify-center w-full">
+                          <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : (isAfterFilterStart ? 'bg-cyan-400' : 'bg-slate-300')}`}></div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section className="bg-gradient-to-br from-white to-blue-50/50 rounded-3xl shadow-lg shadow-blue-100/50 border border-white p-6 relative overflow-hidden">
+              <Sparkles className="absolute -right-4 -bottom-4 w-24 h-24 text-cyan-100 opacity-50 rotate-12" />
+
+              <div className="text-center mb-6 relative z-10">
+                <h2 className="text-xl font-black text-slate-700 flex items-center justify-center gap-2">
+                  {selectedDate} {selectedDate === todayDateStr && <span className="text-sm bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full">今天</span>}
+                </h2>
+                <p className="text-slate-500 text-sm mt-1 font-medium">這天濾了幾壺好水呢？ 🚰</p>
+              </div>
+
+              <div className="flex items-center justify-center gap-6 relative z-10">
+                <button 
+                  onClick={handleRemovePitcher}
+                  disabled={!usageHistory[selectedDate]}
+                  className="w-16 h-16 rounded-3xl bg-white flex items-center justify-center text-slate-400 hover:text-rose-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-90 shadow-sm border-2 border-slate-50"
+                >
+                  <Minus className="w-8 h-8" strokeWidth={3} />
+                </button>
+                
+                <div className="w-24 text-center">
+                  <span className={`text-6xl font-black text-cyan-600 drop-shadow-sm inline-block ${popAnimation ? 'animate-pop' : ''}`}>
+                    {usageHistory[selectedDate] || 0}
+                  </span>
+                  <span className="block text-sm font-bold text-slate-400 mt-1">壺</span>
+                </div>
+
+                <button 
+                  onClick={handleAddPitcher}
+                  className="w-16 h-16 rounded-3xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white transition-all active:scale-90 shadow-lg shadow-blue-200/50"
+                >
+                  <Plus className="w-8 h-8" strokeWidth={3} />
+                </button>
+              </div>
+            </section>
+
+          </main>
+
+          {isResetModalOpen && (
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+              <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 p-6 border-4 border-white">
+                <div className="w-16 h-16 rounded-3xl bg-amber-100 flex items-center justify-center mb-4 text-amber-500 mx-auto transform rotate-12">
+                  <AlertTriangle className="w-8 h-8" strokeWidth={2.5} />
+                </div>
+                <h3 className="font-black text-2xl text-slate-800 text-center mb-2">確認換新濾芯？</h3>
+                <p className="text-slate-500 text-center text-sm mb-6 font-medium leading-relaxed">
+                  進度條將會 <span className="text-amber-500 font-bold">歸零重新計算</span>，<br/>並把「今天」設為起算日喔！
+                </p>
+                <div className="flex gap-3">
+                  <button 
+                    onClick={() => setIsResetModalOpen(false)}
+                    className="flex-1 py-3.5 rounded-2xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition active:scale-95"
+                  >
+                    先不要
+                  </button>
+                  <button 
+                    onClick={confirmResetFilter}
+                    className="flex-1 py-3.5 rounded-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-blue-200 active:scale-95 transition"
+                  >
+                    確定更換
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isSettingsOpen && (
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+              <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                <div className="flex justify-between items-center p-5 border-b border-slate-50 bg-slate-50/50">
+                  <h3 className="font-black text-xl text-slate-700 flex items-center gap-2">
+                    <Settings className="w-5 h-5 text-cyan-500" />
+                    容量設定
+                  </h3>
+                  <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-slate-600 bg-white p-1.5 rounded-full shadow-sm active:scale-90 transition">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div>
+                    <label className="flex items-center gap-1.5 text-sm font-bold text-slate-600 mb-2">
+                      <Info className="w-4 h-4 text-cyan-500" />
+                      濾芯總容量 (公升)
+                    </label>
+                    <input 
+                      type="number" 
+                      value={settings.totalCapacity}
+                      onChange={(e) => setSettings({...settings, totalCapacity: Number(e.target.value)})}
+                      className="w-full border-2 border-slate-100 bg-slate-50 rounded-2xl p-4 outline-none focus:border-cyan-400 focus:bg-white transition font-black text-lg text-slate-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="flex items-center gap-1.5 text-sm font-bold text-slate-600 mb-2">
+                      <Droplet className="w-4 h-4 text-cyan-500" />
+                      單壺容量 (公升)
+                    </label>
+                    <input 
+                      type="number" 
+                      value={settings.pitcherVolume}
+                      onChange={(e) => setSettings({...settings, pitcherVolume: Number(e.target.value)})}
+                      className="w-full border-2 border-slate-100 bg-slate-50 rounded-2xl p-4 outline-none focus:border-cyan-400 focus:bg-white transition font-black text-lg text-slate-700"
+                    />
+                  </div>
+                </div>
+                <div className="p-5">
+                  <button 
+                    onClick={() => setIsSettingsOpen(false)}
+                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-black text-lg py-4 rounded-2xl active:scale-[0.98] transition shadow-lg shadow-blue-200/50"
+                  >
+                    儲存設定
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // 將 App 渲染到畫面上
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
 </body>
 </html>
