@@ -1,460 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-	<title></title>
-	<meta name="generator" content="LibreOffice 24.8.1.2 (Linux)"/>
-	<meta name="created" content="00:00:00"/>
-	<meta name="changed" content="00:00:00"/>
-	<style type="text/css">
-		@page { size: 8.27in 11.69in; margin: 0.79in }
-		p { line-height: 115%; margin-bottom: 0.1in; background: transparent }
-		pre { background: transparent }
-		pre.western { font-family: "Liberation Mono", monospace; font-size: 10pt }
-		pre.cjk { font-family: "NSimSun", monospace; font-size: 10pt }
-		pre.ctl { font-family: "Liberation Mono", monospace; font-size: 10pt }
-	</style>
-</head>
-<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><pre class="western">&lt;!DOCTYPE html&gt;
-&lt;html lang=&quot;zh-TW&quot;&gt;
-&lt;head&gt;
-  &lt;meta charset=&quot;UTF-8&quot; /&gt;
-  &lt;!-- <font face="NSimSun, monospace"><span lang="zh-CN">確保在手機上瀏覽時比例正確且支援觸控 </span></font>--&gt;
-  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
-  &lt;title&gt;<font face="NSimSun, monospace"><span lang="zh-CN">濾水壺小幫手</span></font>&lt;/title&gt;
-  
-  &lt;!-- <font face="NSimSun, monospace"><span lang="zh-CN">引入 </span></font>Tailwind CSS <font face="NSimSun, monospace"><span lang="zh-CN">進行美化排版 </span></font>--&gt;
-  &lt;script src=&quot;https://cdn.tailwindcss.com&quot;&gt;&lt;/script&gt;
-  
-  &lt;!-- <font face="NSimSun, monospace"><span lang="zh-CN">引入 </span></font>React <font face="NSimSun, monospace"><span lang="zh-CN">與 </span></font>ReactDOM (<font face="NSimSun, monospace"><span lang="zh-CN">使用 </span></font>CDN) --&gt;
-  &lt;script src=&quot;https://unpkg.com/react@18/umd/react.production.min.js&quot; crossorigin&gt;&lt;/script&gt;
-  &lt;script src=&quot;https://unpkg.com/react-dom@18/umd/react-dom.production.min.js&quot; crossorigin&gt;&lt;/script&gt;
-  
-  &lt;!-- <font face="NSimSun, monospace"><span lang="zh-CN">引入 </span></font>Babel <font face="NSimSun, monospace"><span lang="zh-CN">使得瀏覽器能直接編譯 </span></font>JSX <font face="NSimSun, monospace"><span lang="zh-CN">語法 </span></font>--&gt;
-  &lt;script src=&quot;https://unpkg.com/@babel/standalone/babel.min.js&quot;&gt;&lt;/script&gt;
-
-  &lt;!-- <font face="NSimSun, monospace"><span lang="zh-CN">自訂的動畫與基礎樣式 </span></font>--&gt;
-  &lt;style&gt;
-    @keyframes pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.2); color: #0ea5e9; }
-      100% { transform: scale(1); }
-    }
-    .animate-pop { 
-      animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-    }
-    body {
-      -webkit-tap-highlight-color: transparent; /* <font face="NSimSun, monospace"><span lang="zh-CN">移除手機點擊時的預設黑影 </span></font>*/
-    }
-  &lt;/style&gt;
-&lt;/head&gt;
-&lt;body class=&quot;bg-[#f4f9ff] text-slate-800 font-sans overflow-x-hidden&quot;&gt;
-
-  &lt;!-- React <font face="NSimSun, monospace"><span lang="zh-CN">應用程式的掛載點 </span></font>--&gt;
-  &lt;div id=&quot;root&quot;&gt;&lt;/div&gt;
-
-  &lt;!-- <font face="NSimSun, monospace"><span lang="zh-CN">在這裡撰寫我們的 </span></font>React <font face="NSimSun, monospace"><span lang="zh-CN">邏輯 </span></font>--&gt;
-  &lt;script type=&quot;text/babel&quot;&gt;
-    const { useState, useMemo, useEffect } = React;
-
-    // ==========================================
-    // 1. <font face="NSimSun, monospace"><span lang="zh-CN">手工繪製的 </span></font>SVG <font face="NSimSun, monospace"><span lang="zh-CN">圖示元件 </span></font>(<font face="NSimSun, monospace"><span lang="zh-CN">取代原本的 </span></font>lucide-react)
-    // <font face="NSimSun, monospace"><span lang="zh-CN">為了讓 </span></font>HTML <font face="NSimSun, monospace"><span lang="zh-CN">完全獨立運作，我們將用到的圖示直接轉成元件</span></font>
-    // ==========================================
-    const IconSvg = ({ children, className = &quot;&quot;, strokeWidth = 2, ...props }) =&gt; (
-      &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; strokeWidth={strokeWidth} strokeLinecap=&quot;round&quot; strokeLinejoin=&quot;round&quot; className={className} {...props}&gt;
-        {children}
-      &lt;/svg&gt;
-    );
-
-    const Droplet = (props) =&gt; &lt;IconSvg {...props}&gt;&lt;path d=&quot;M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z&quot;/&gt;&lt;/IconSvg&gt;;
-    const Plus = (props) =&gt; &lt;IconSvg {...props}&gt;&lt;line x1=&quot;12&quot; y1=&quot;5&quot; x2=&quot;12&quot; y2=&quot;19&quot;/&gt;&lt;line x1=&quot;5&quot; y1=&quot;12&quot; x2=&quot;19&quot; y2=&quot;12&quot;/&gt;&lt;/IconSvg&gt;;
-    const Minus = (props) =&gt; &lt;IconSvg {...props}&gt;&lt;line x1=&quot;5&quot; y1=&quot;12&quot; x2=&quot;19&quot; y2=&quot;12&quot;/&gt;&lt;/IconSvg&gt;;
-    const RotateCcw = (props) =&gt; &lt;IconSvg {...props}&gt;&lt;path d=&quot;M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8&quot;/&gt;&lt;path d=&quot;M3 3v5h5&quot;/&gt;&lt;/IconSvg&gt;;
-    const Settings = (props) =&gt; &lt;IconSvg {...props}&gt;&lt;path d=&quot;M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z&quot;/&gt;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/&gt;&lt;/IconSvg&gt;;
-    const X = (props) =&gt; &lt;IconSvg {...props}&gt;&lt;line x1=&quot;18&quot; y1=&quot;6&quot; x2=&quot;6&quot; y2=&quot;18&quot;/&gt;&lt;line x1=&quot;6&quot; y1=&quot;6&quot; x2=&quot;18&quot; y2=&quot;18&quot;/&gt;&lt;/IconSvg&gt;;
-    const ChevronLeft = (props) =&gt; &lt;IconSvg {...props}&gt;&lt;polyline points=&quot;15 18 9 12 15 6&quot;/&gt;&lt;/IconSvg&gt;;
-    const ChevronRight = (props) =&gt; &lt;IconSvg {...props}&gt;&lt;polyline points=&quot;9 18 15 12 9 6&quot;/&gt;&lt;/IconSvg&gt;;
-    const AlertTriangle = (props) =&gt; &lt;IconSvg {...props}&gt;&lt;path d=&quot;m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z&quot;/&gt;&lt;line x1=&quot;12&quot; y1=&quot;9&quot; x2=&quot;12&quot; y2=&quot;13&quot;/&gt;&lt;line x1=&quot;12&quot; y1=&quot;17&quot; x2=&quot;12.01&quot; y2=&quot;17&quot;/&gt;&lt;/IconSvg&gt;;
-    const Sparkles = (props) =&gt; &lt;IconSvg {...props}&gt;&lt;path d=&quot;m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z&quot;/&gt;&lt;path d=&quot;M5 3v4&quot;/&gt;&lt;path d=&quot;M19 17v4&quot;/&gt;&lt;path d=&quot;M3 5h4&quot;/&gt;&lt;path d=&quot;M17 19h4&quot;/&gt;&lt;/IconSvg&gt;;
-    const Info = (props) =&gt; &lt;IconSvg {...props}&gt;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;10&quot;/&gt;&lt;line x1=&quot;12&quot; y1=&quot;16&quot; x2=&quot;12&quot; y2=&quot;12&quot;/&gt;&lt;line x1=&quot;12&quot; y1=&quot;8&quot; x2=&quot;12.01&quot; y2=&quot;8&quot;/&gt;&lt;/IconSvg&gt;;
-
-    // ==========================================
-    // 2. <font face="NSimSun, monospace"><span lang="zh-CN">輔助函式</span></font>
-    // ==========================================
-    const getLocalDateString = (date = new Date()) =&gt; {
-      const d = new Date(date);
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-
-    // ==========================================
-    // 3. <font face="NSimSun, monospace"><span lang="zh-CN">主應用程式</span></font>
-    // ==========================================
-    function App() {
-      const todayDateStr = getLocalDateString();
-      
-      // --- <font face="NSimSun, monospace"><span lang="zh-CN">狀態管理 </span></font>(State) <font face="NSimSun, monospace"><span lang="zh-CN">與 </span></font>LocalStorage <font face="NSimSun, monospace"><span lang="zh-CN">綁定 </span></font>---
-      // <font face="NSimSun, monospace"><span lang="zh-CN">讀取設定</span></font>
-      const [settings, setSettings] = useState(() =&gt; {
-        const saved = localStorage.getItem('waterFilterSettings');
-        return saved ? JSON.parse(saved) : { totalCapacity: 100, pitcherVolume: 2 };
-      });
-
-      // <font face="NSimSun, monospace"><span lang="zh-CN">讀取濾芯啟用日</span></font>
-      const [filterStartDate, setFilterStartDate] = useState(() =&gt; {
-        const saved = localStorage.getItem('waterFilterStartDate');
-        if (saved) return saved;
-        const d = new Date(); d.setDate(d.getDate() - 7); 
-        return getLocalDateString(d); // <font face="NSimSun, monospace"><span lang="zh-CN">預設</span></font>7<font face="NSimSun, monospace"><span lang="zh-CN">天前</span></font>
-      });
-
-      // <font face="NSimSun, monospace"><span lang="zh-CN">讀取歷史紀錄</span></font>
-      const [usageHistory, setUsageHistory] = useState(() =&gt; {
-        const saved = localStorage.getItem('waterFilterHistory');
-        return saved ? JSON.parse(saved) : {};
-      });
-
-      // <font face="NSimSun, monospace"><span lang="zh-CN">當資料變更時，儲存到 </span></font>LocalStorage
-      useEffect(() =&gt; {
-        localStorage.setItem('waterFilterSettings', JSON.stringify(settings));
-      }, [settings]);
-      useEffect(() =&gt; {
-        localStorage.setItem('waterFilterStartDate', filterStartDate);
-      }, [filterStartDate]);
-      useEffect(() =&gt; {
-        localStorage.setItem('waterFilterHistory', JSON.stringify(usageHistory));
-      }, [usageHistory]);
-
-      // UI <font face="NSimSun, monospace"><span lang="zh-CN">狀態</span></font>
-      const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-      const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-      const [currentMonth, setCurrentMonth] = useState(new Date());
-      const [selectedDate, setSelectedDate] = useState(todayDateStr);
-      const [popAnimation, setPopAnimation] = useState(false);
-
-      // --- <font face="NSimSun, monospace"><span lang="zh-CN">計算邏輯 </span></font>---
-      const totalPitchersUsed = useMemo(() =&gt; {
-        let total = 0;
-        for (const [date, count] of Object.entries(usageHistory)) {
-          if (date &gt;= filterStartDate) {
-            total += count;
-          }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>濾水壺小幫手</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); color: #0ea5e9; }
+            100% { transform: scale(1); }
         }
-        return total;
-      }, [usageHistory, filterStartDate]);
+        .animate-pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    </style>
+</head>
+<body class="bg-[#f4f9ff]">
+    <div id="root"></div>
 
-      const totalVolumeUsed = totalPitchersUsed * settings.pitcherVolume;
-      const progressPercentage = Math.min((totalVolumeUsed / settings.totalCapacity) * 100, 100);
-      const isWarning = progressPercentage &gt;= 85;
-      const isDanger = progressPercentage &gt;= 100;
-      const remainingPitchers = Math.max(0, Math.floor((settings.totalCapacity - totalVolumeUsed) / settings.pitcherVolume));
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+        
+        // 這裡定義圖示元件 (因為直接引入 lucide-react 在 CDN 環境較複雜，我們用簡單版)
+        const Icon = ({ name, className = "" }) => {
+            useEffect(() => {
+                lucide.createIcons();
+            }, []);
+            return <i data-lucide={name} className={className}></i>;
+        };
 
-      const getStatusContent = () =&gt; {
-        if (isDanger) return { text: &quot;<font face="NSimSun, monospace"><span lang="zh-CN">該換濾芯囉！</span></font>&quot;, emoji: &quot;🚨&quot;, color: &quot;from-red-400 to-rose-500&quot;, shadow: &quot;shadow-red-200&quot; };
-        if (isWarning) return { text: &quot;<font face="NSimSun, monospace"><span lang="zh-CN">準備買新濾芯啦</span></font>&quot;, emoji: &quot;🛒&quot;, color: &quot;from-amber-400 to-orange-500&quot;, shadow: &quot;shadow-amber-200&quot; };
-        if (progressPercentage &gt; 50) return { text: &quot;<font face="NSimSun, monospace"><span lang="zh-CN">穩定過濾中</span></font>&quot;, emoji: &quot;💧&quot;, color: &quot;from-cyan-400 to-blue-500&quot;, shadow: &quot;shadow-blue-200&quot; };
-        return { text: &quot;<font face="NSimSun, monospace"><span lang="zh-CN">水質超棒！</span></font>&quot;, emoji: &quot;✨&quot;, color: &quot;from-cyan-300 to-blue-400&quot;, shadow: &quot;shadow-cyan-200&quot; };
-      };
-      const statusInfo = getStatusContent();
-
-      // --- <font face="NSimSun, monospace"><span lang="zh-CN">互動功能 </span></font>---
-      const triggerPop = () =&gt; {
-        setPopAnimation(false);
-        setTimeout(() =&gt; setPopAnimation(true), 10);
-      };
-
-      const handleAddPitcher = () =&gt; {
-        setUsageHistory(prev =&gt; ({
-          ...prev,
-          [selectedDate]: (prev[selectedDate] || 0) + 1
-        }));
-        triggerPop();
-      };
-
-      const handleRemovePitcher = () =&gt; {
-        setUsageHistory(prev =&gt; {
-          const current = prev[selectedDate] || 0;
-          if (current &lt;= 0) return prev;
-          return {
-            ...prev,
-            [selectedDate]: current - 1
-          };
-        });
-        triggerPop();
-      };
-
-      const confirmResetFilter = () =&gt; {
-        setFilterStartDate(todayDateStr);
-        setIsResetModalOpen(false);
-      };
-
-      // --- <font face="NSimSun, monospace"><span lang="zh-CN">日曆邏輯 </span></font>---
-      const handlePrevMonth = () =&gt; setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
-      const handleNextMonth = () =&gt; setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
-
-      const generateCalendarDays = () =&gt; {
-        const year = currentMonth.getFullYear();
-        const month = currentMonth.getMonth();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const firstDayIndex = new Date(year, month, 1).getDay();
-        const days = [];
-        for (let i = 0; i &lt; firstDayIndex; i++) days.push(null);
-        for (let i = 1; i &lt;= daysInMonth; i++) days.push(new Date(year, month, i));
-        return days;
-      };
-
-      const calendarDays = generateCalendarDays();
-      const weekDays = ['<font face="NSimSun, monospace"><span lang="zh-CN">日</span></font>', '<font face="NSimSun, monospace"><span lang="zh-CN">一</span></font>', '<font face="NSimSun, monospace"><span lang="zh-CN">二</span></font>', '<font face="NSimSun, monospace"><span lang="zh-CN">三</span></font>', '<font face="NSimSun, monospace"><span lang="zh-CN">四</span></font>', '<font face="NSimSun, monospace"><span lang="zh-CN">五</span></font>', '<font face="NSimSun, monospace"><span lang="zh-CN">六</span></font>'];
-
-      return (
-        &lt;div className=&quot;min-h-screen bg-[#f4f9ff] text-slate-800 font-sans pb-10&quot;&gt;
-          
-          &lt;header className=&quot;bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-50&quot;&gt;
-            &lt;div className=&quot;flex items-center gap-2&quot;&gt;
-              &lt;div className=&quot;bg-white/20 p-1.5 rounded-full backdrop-blur-sm&quot;&gt;
-                &lt;Droplet className=&quot;w-6 h-6 text-white&quot; fill=&quot;white&quot; /&gt;
-              &lt;/div&gt;
-              &lt;h1 className=&quot;text-xl font-bold tracking-wide text-white drop-shadow-sm&quot;&gt;<font face="NSimSun, monospace"><span lang="zh-CN">濾水小幫手</span></font>&lt;/h1&gt;
-            &lt;/div&gt;
-            &lt;button onClick={() =&gt; setIsSettingsOpen(true)} className=&quot;p-2 hover:bg-white/20 rounded-full transition-colors active:scale-90&quot;&gt;
-              &lt;Settings className=&quot;w-6 h-6 text-white&quot; /&gt;
-            &lt;/button&gt;
-          &lt;/header&gt;
-
-          &lt;main className=&quot;max-w-md mx-auto p-4 space-y-6 mt-4&quot;&gt;
+        function App() {
+            // --- 這裡貼上你之前的 React 邏輯程式碼 ---
+            // 注意：把原本程式碼中的 <Droplet /> 改成 <Icon name="droplet" /> 類推
             
-            &lt;section className={`bg-white rounded-3xl shadow-lg border border-slate-50 p-6 relative overflow-hidden transition-all duration-300 ${statusInfo.shadow}`}&gt;
-              &lt;div className=&quot;absolute -right-10 -top-10 w-40 h-40 bg-gradient-to-br from-cyan-100/50 to-blue-100/50 rounded-full blur-2xl pointer-events-none&quot;&gt;&lt;/div&gt;
+            const [count, setCount] = useState(0); // 範例
 
-              &lt;div className=&quot;flex justify-between items-end mb-4 relative z-10&quot;&gt;
-                &lt;div&gt;
-                  &lt;div className=&quot;flex items-center gap-2 mb-1&quot;&gt;
-                    &lt;span className=&quot;text-2xl&quot;&gt;{statusInfo.emoji}&lt;/span&gt;
-                    &lt;h2 className=&quot;text-sm font-bold text-slate-500&quot;&gt;{statusInfo.text}&lt;/h2&gt;
-                  &lt;/div&gt;
-                  &lt;div className=&quot;flex items-baseline gap-1&quot;&gt;
-                    &lt;span className={`text-5xl font-black bg-clip-text text-transparent bg-gradient-to-br ${statusInfo.color}`}&gt;
-                      {Math.floor(progressPercentage)}&lt;span className=&quot;text-3xl&quot;&gt;%&lt;/span&gt;
-                    &lt;/span&gt;
-                  &lt;/div&gt;
-                &lt;/div&gt;
-                &lt;div className=&quot;text-right&quot;&gt;
-                  &lt;span className=&quot;block text-xs text-slate-400 font-medium mb-1&quot;&gt;<font face="NSimSun, monospace"><span lang="zh-CN">約還可濾</span></font>&lt;/span&gt;
-                  &lt;span className={`text-2xl font-black ${isDanger ? 'text-red-500' : 'text-slate-700'}`}&gt;
-                    {remainingPitchers} &lt;span className=&quot;text-base text-slate-400&quot;&gt;<font face="NSimSun, monospace"><span lang="zh-CN">壺</span></font>&lt;/span&gt;
-                  &lt;/span&gt;
-                &lt;/div&gt;
-              &lt;/div&gt;
+            return (
+                <div className="min-h-screen p-4 text-center">
+                    <h1 className="text-2xl font-bold text-blue-600">濾水小幫手</h1>
+                    <div className="mt-10 p-6 bg-white rounded-3xl shadow-xl">
+                        <p>網頁已經成功跑起來囉！</p>
+                        <button 
+                            onClick={() => setCount(count + 1)}
+                            className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-full"
+                        >
+                            測試點擊：{count}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
 
-              &lt;div className=&quot;h-6 bg-slate-100 rounded-full overflow-hidden mb-2 relative z-10 shadow-inner&quot;&gt;
-                &lt;div 
-                  className={`h-full transition-all duration-1000 ease-out rounded-full bg-gradient-to-r ${statusInfo.color} relative`}
-                  style={{ width: `${progressPercentage}%` }}
-                &gt;
-                  &lt;div className=&quot;absolute top-0 left-0 right-0 h-1/2 bg-white/20 rounded-t-full&quot;&gt;&lt;/div&gt;
-                &lt;/div&gt;
-              &lt;/div&gt;
-
-              &lt;div className=&quot;flex justify-between text-xs text-slate-400 font-medium mb-6 relative z-10 px-1&quot;&gt;
-                &lt;span&gt;<font face="NSimSun, monospace"><span lang="zh-CN">已濾 </span></font>{totalVolumeUsed}L&lt;/span&gt;
-                &lt;span&gt;<font face="NSimSun, monospace"><span lang="zh-CN">總量 </span></font>{settings.totalCapacity}L&lt;/span&gt;
-              &lt;/div&gt;
-
-              &lt;button 
-                onClick={() =&gt; setIsResetModalOpen(true)}
-                className=&quot;w-full py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all bg-slate-50 hover:bg-slate-100 text-slate-600 active:scale-[0.98] border border-slate-100 shadow-sm&quot;
-              &gt;
-                &lt;RotateCcw className=&quot;w-5 h-5&quot; /&gt;
-                <font face="NSimSun, monospace"><span lang="zh-CN">換新濾芯啦！</span></font>(<font face="NSimSun, monospace"><span lang="zh-CN">重置</span></font>)
-              &lt;/button&gt;
-            &lt;/section&gt;
-
-            &lt;section className=&quot;bg-white rounded-3xl shadow-lg shadow-blue-100/50 border border-slate-50 p-5&quot;&gt;
-              &lt;div className=&quot;flex items-center justify-between mb-5 px-2&quot;&gt;
-                &lt;button onClick={handlePrevMonth} className=&quot;p-2 text-cyan-600 hover:bg-cyan-50 rounded-2xl transition active:scale-90&quot;&gt;
-                  &lt;ChevronLeft className=&quot;w-6 h-6&quot; /&gt;
-                &lt;/button&gt;
-                &lt;h2 className=&quot;font-black text-lg text-slate-700 tracking-wide&quot;&gt;
-                  {currentMonth.getFullYear()} <font face="NSimSun, monospace"><span lang="zh-CN">年 </span></font>{currentMonth.getMonth() + 1} <font face="NSimSun, monospace"><span lang="zh-CN">月</span></font>
-                &lt;/h2&gt;
-                &lt;button onClick={handleNextMonth} className=&quot;p-2 text-cyan-600 hover:bg-cyan-50 rounded-2xl transition active:scale-90&quot;&gt;
-                  &lt;ChevronRight className=&quot;w-6 h-6&quot; /&gt;
-                &lt;/button&gt;
-              &lt;/div&gt;
-
-              &lt;div className=&quot;grid grid-cols-7 gap-y-2 gap-x-1 mb-2 text-center&quot;&gt;
-                {weekDays.map((day, idx) =&gt; (
-                  &lt;div key={idx} className=&quot;text-xs font-bold text-slate-300 py-1&quot;&gt;{day}&lt;/div&gt;
-                ))}
-              &lt;/div&gt;
-
-              &lt;div className=&quot;grid grid-cols-7 gap-y-2 gap-x-1&quot;&gt;
-                {calendarDays.map((dateObj, idx) =&gt; {
-                  if (!dateObj) return &lt;div key={`empty-${idx}`} className=&quot;h-11&quot;&gt;&lt;/div&gt;;
-
-                  const dateStr = getLocalDateString(dateObj);
-                  const isSelected = dateStr === selectedDate;
-                  const isToday = dateStr === todayDateStr;
-                  const isAfterFilterStart = dateStr &gt;= filterStartDate;
-                  const usageCount = usageHistory[dateStr] || 0;
-                  const hasData = usageCount &gt; 0;
-
-                  return (
-                    &lt;button
-                      key={dateStr}
-                      onClick={() =&gt; setSelectedDate(dateStr)}
-                      className={`relative h-11 w-full flex flex-col items-center justify-center rounded-2xl transition-all duration-200 ${
-                        isSelected 
-                          ? 'bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-md shadow-blue-200 scale-105 z-10' 
-                          : 'hover:bg-slate-50 text-slate-600 active:scale-95'
-                      }`}
-                    &gt;
-                      {isToday &amp;&amp; !isSelected &amp;&amp; (
-                        &lt;div className=&quot;absolute inset-0 rounded-2xl border-2 border-cyan-300 opacity-50&quot;&gt;&lt;/div&gt;
-                      )}
-
-                      &lt;span className={`text-sm ${isSelected ? 'font-black' : 'font-semibold'}`}&gt;
-                        {dateObj.getDate()}
-                      &lt;/span&gt;
-                      
-                      {hasData &amp;&amp; (
-                        &lt;div className=&quot;absolute bottom-1 flex justify-center w-full&quot;&gt;
-                          &lt;div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : (isAfterFilterStart ? 'bg-cyan-400' : 'bg-slate-300')}`}&gt;&lt;/div&gt;
-                        &lt;/div&gt;
-                      )}
-                    &lt;/button&gt;
-                  );
-                })}
-              &lt;/div&gt;
-            &lt;/section&gt;
-
-            &lt;section className=&quot;bg-gradient-to-br from-white to-blue-50/50 rounded-3xl shadow-lg shadow-blue-100/50 border border-white p-6 relative overflow-hidden&quot;&gt;
-              &lt;Sparkles className=&quot;absolute -right-4 -bottom-4 w-24 h-24 text-cyan-100 opacity-50 rotate-12&quot; /&gt;
-
-              &lt;div className=&quot;text-center mb-6 relative z-10&quot;&gt;
-                &lt;h2 className=&quot;text-xl font-black text-slate-700 flex items-center justify-center gap-2&quot;&gt;
-                  {selectedDate} {selectedDate === todayDateStr &amp;&amp; &lt;span className=&quot;text-sm bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full&quot;&gt;<font face="NSimSun, monospace"><span lang="zh-CN">今天</span></font>&lt;/span&gt;}
-                &lt;/h2&gt;
-                &lt;p className=&quot;text-slate-500 text-sm mt-1 font-medium&quot;&gt;<font face="NSimSun, monospace"><span lang="zh-CN">這天濾了幾壺好水呢？ 🚰</span></font>&lt;/p&gt;
-              &lt;/div&gt;
-
-              &lt;div className=&quot;flex items-center justify-center gap-6 relative z-10&quot;&gt;
-                &lt;button 
-                  onClick={handleRemovePitcher}
-                  disabled={!usageHistory[selectedDate]}
-                  className=&quot;w-16 h-16 rounded-3xl bg-white flex items-center justify-center text-slate-400 hover:text-rose-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-90 shadow-sm border-2 border-slate-50&quot;
-                &gt;
-                  &lt;Minus className=&quot;w-8 h-8&quot; strokeWidth={3} /&gt;
-                &lt;/button&gt;
-                
-                &lt;div className=&quot;w-24 text-center&quot;&gt;
-                  &lt;span className={`text-6xl font-black text-cyan-600 drop-shadow-sm inline-block ${popAnimation ? 'animate-pop' : ''}`}&gt;
-                    {usageHistory[selectedDate] || 0}
-                  &lt;/span&gt;
-                  &lt;span className=&quot;block text-sm font-bold text-slate-400 mt-1&quot;&gt;<font face="NSimSun, monospace"><span lang="zh-CN">壺</span></font>&lt;/span&gt;
-                &lt;/div&gt;
-
-                &lt;button 
-                  onClick={handleAddPitcher}
-                  className=&quot;w-16 h-16 rounded-3xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white transition-all active:scale-90 shadow-lg shadow-blue-200/50&quot;
-                &gt;
-                  &lt;Plus className=&quot;w-8 h-8&quot; strokeWidth={3} /&gt;
-                &lt;/button&gt;
-              &lt;/div&gt;
-            &lt;/section&gt;
-
-          &lt;/main&gt;
-
-          {isResetModalOpen &amp;&amp; (
-            &lt;div className=&quot;fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-[100]&quot;&gt;
-              &lt;div className=&quot;bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 p-6 border-4 border-white&quot;&gt;
-                &lt;div className=&quot;w-16 h-16 rounded-3xl bg-amber-100 flex items-center justify-center mb-4 text-amber-500 mx-auto transform rotate-12&quot;&gt;
-                  &lt;AlertTriangle className=&quot;w-8 h-8&quot; strokeWidth={2.5} /&gt;
-                &lt;/div&gt;
-                &lt;h3 className=&quot;font-black text-2xl text-slate-800 text-center mb-2&quot;&gt;<font face="NSimSun, monospace"><span lang="zh-CN">確認換新濾芯？</span></font>&lt;/h3&gt;
-                &lt;p className=&quot;text-slate-500 text-center text-sm mb-6 font-medium leading-relaxed&quot;&gt;
-                  <font face="NSimSun, monospace"><span lang="zh-CN">進度條將會 </span></font>&lt;span className=&quot;text-amber-500 font-bold&quot;&gt;<font face="NSimSun, monospace"><span lang="zh-CN">歸零重新計算</span></font>&lt;/span&gt;<font face="NSimSun, monospace"><span lang="zh-CN">，</span></font>&lt;br/&gt;<font face="NSimSun, monospace"><span lang="zh-CN">並把「今天」設為起算日喔！</span></font>
-                &lt;/p&gt;
-                &lt;div className=&quot;flex gap-3&quot;&gt;
-                  &lt;button 
-                    onClick={() =&gt; setIsResetModalOpen(false)}
-                    className=&quot;flex-1 py-3.5 rounded-2xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition active:scale-95&quot;
-                  &gt;
-                    <font face="NSimSun, monospace"><span lang="zh-CN">先不要</span></font>
-                  &lt;/button&gt;
-                  &lt;button 
-                    onClick={confirmResetFilter}
-                    className=&quot;flex-1 py-3.5 rounded-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-blue-200 active:scale-95 transition&quot;
-                  &gt;
-                    <font face="NSimSun, monospace"><span lang="zh-CN">確定更換</span></font>
-                  &lt;/button&gt;
-                &lt;/div&gt;
-              &lt;/div&gt;
-            &lt;/div&gt;
-          )}
-
-          {isSettingsOpen &amp;&amp; (
-            &lt;div className=&quot;fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-[100]&quot;&gt;
-              &lt;div className=&quot;bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200&quot;&gt;
-                &lt;div className=&quot;flex justify-between items-center p-5 border-b border-slate-50 bg-slate-50/50&quot;&gt;
-                  &lt;h3 className=&quot;font-black text-xl text-slate-700 flex items-center gap-2&quot;&gt;
-                    &lt;Settings className=&quot;w-5 h-5 text-cyan-500&quot; /&gt;
-                    <font face="NSimSun, monospace"><span lang="zh-CN">容量設定</span></font>
-                  &lt;/h3&gt;
-                  &lt;button onClick={() =&gt; setIsSettingsOpen(false)} className=&quot;text-slate-400 hover:text-slate-600 bg-white p-1.5 rounded-full shadow-sm active:scale-90 transition&quot;&gt;
-                    &lt;X className=&quot;w-5 h-5&quot; /&gt;
-                  &lt;/button&gt;
-                &lt;/div&gt;
-                &lt;div className=&quot;p-6 space-y-6&quot;&gt;
-                  &lt;div&gt;
-                    &lt;label className=&quot;flex items-center gap-1.5 text-sm font-bold text-slate-600 mb-2&quot;&gt;
-                      &lt;Info className=&quot;w-4 h-4 text-cyan-500&quot; /&gt;
-                      <font face="NSimSun, monospace"><span lang="zh-CN">濾芯總容量 </span></font>(<font face="NSimSun, monospace"><span lang="zh-CN">公升</span></font>)
-                    &lt;/label&gt;
-                    &lt;input 
-                      type=&quot;number&quot; 
-                      value={settings.totalCapacity}
-                      onChange={(e) =&gt; setSettings({...settings, totalCapacity: Number(e.target.value)})}
-                      className=&quot;w-full border-2 border-slate-100 bg-slate-50 rounded-2xl p-4 outline-none focus:border-cyan-400 focus:bg-white transition font-black text-lg text-slate-700&quot;
-                    /&gt;
-                  &lt;/div&gt;
-                  &lt;div&gt;
-                    &lt;label className=&quot;flex items-center gap-1.5 text-sm font-bold text-slate-600 mb-2&quot;&gt;
-                      &lt;Droplet className=&quot;w-4 h-4 text-cyan-500&quot; /&gt;
-                      <font face="NSimSun, monospace"><span lang="zh-CN">單壺容量 </span></font>(<font face="NSimSun, monospace"><span lang="zh-CN">公升</span></font>)
-                    &lt;/label&gt;
-                    &lt;input 
-                      type=&quot;number&quot; 
-                      value={settings.pitcherVolume}
-                      onChange={(e) =&gt; setSettings({...settings, pitcherVolume: Number(e.target.value)})}
-                      className=&quot;w-full border-2 border-slate-100 bg-slate-50 rounded-2xl p-4 outline-none focus:border-cyan-400 focus:bg-white transition font-black text-lg text-slate-700&quot;
-                    /&gt;
-                  &lt;/div&gt;
-                &lt;/div&gt;
-                &lt;div className=&quot;p-5&quot;&gt;
-                  &lt;button 
-                    onClick={() =&gt; setIsSettingsOpen(false)}
-                    className=&quot;w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-black text-lg py-4 rounded-2xl active:scale-[0.98] transition shadow-lg shadow-blue-200/50&quot;
-                  &gt;
-                    <font face="NSimSun, monospace"><span lang="zh-CN">儲存設定</span></font>
-                  &lt;/button&gt;
-                &lt;/div&gt;
-              &lt;/div&gt;
-            &lt;/div&gt;
-          )}
-        &lt;/div&gt;
-      );
-    }
-
-    // <font face="NSimSun, monospace"><span lang="zh-CN">將 </span></font>App <font face="NSimSun, monospace"><span lang="zh-CN">渲染到畫面上</span></font>
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(&lt;App /&gt;);
-  &lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
-</pre>
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
